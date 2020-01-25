@@ -51,8 +51,16 @@ namespace AntennaAI.AI.NeuralNetworks
                 _DWoffset = new double[layers_count][];
                 _BestVariantW = new double[layers_count][,];
                 _BestVariantOffsetW = new double[layers_count][];
-
-                throw new NotImplementedException();
+                for (var i = 0; i < layers_count; i++)
+                {
+                    var (neurons_count, inputs_count) = _Network._Layers[i];
+                    _Errors[i] = new double[neurons_count];
+                    _State[i] = new double[neurons_count];
+                    _DW[i] = new double[neurons_count, inputs_count];
+                    _DWoffset[i] = new double[neurons_count];
+                    _BestVariantW[i] = (double[,])Network._Layers[i].Clone();
+                    _BestVariantOffsetW[i] = (double[])Network._OffsetsWeights[i].Clone();
+                }
             }
 
             public override double Teach(double[] Input, double[] Output, double[] Expected)
