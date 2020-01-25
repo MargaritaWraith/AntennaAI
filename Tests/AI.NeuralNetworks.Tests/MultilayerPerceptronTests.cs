@@ -428,5 +428,41 @@ namespace AI.NeuralNetworks.Tests
             CollectionAssert.That.Collection(network.HiddenOutputs[0]).ValuesAreEqual(0.81757447619364365, 0.95257412682243336);
             CollectionAssert.That.Collection(errors).ValuesAreEqual(0.023895071840696763);
         }
+
+        [TestMethod]
+        public void ProcessWithTeach_Test()
+        {
+            var network_structure = GetNetworkStructure();
+            var network = new MultilayerPerceptron(network_structure);
+            CheckNetwork(network, network_structure);
+
+            double[] input = { 0, 1 };           // Входное воздействие
+            double[] output = { 0 };             // Вектор отклика сети
+            double[] expected_output = { 1 };    // Ожидаемое значение оклика сети для процесса обучения
+            double[] errors = { 0 };
+
+            network.Process(input, output, expected_output, errors);
+
+            CollectionAssert.That.Collection(output).ValuesAreEqual(0.78139043094733129);
+            CollectionAssert.That.Collection(network.HiddenOutputs[0]).ValuesAreEqual(0.81757447619364365, 0.95257412682243336);
+            CollectionAssert.That.Collection(errors).ValuesAreEqual(0.023895071840696763);
+
+            Assert.That.Value(network[0]).IsEqual(network_structure[0]);
+
+            const double rho = 0.5;
+            var teacher = network.CreateTeacher<IBackPropagationTeacher>(t => t.Rho = rho);
+            teacher.Teach(input, output, expected_output);
+
+            CollectionAssert.That.Collection(network[0]).IsEqualTo(new[,]
+            {
+                {  1, 0.50417715523146878 },
+                { -1, 1.9991564893972078 }
+            });
+            Assert.That.Value(network[1]).IsEqual(network_structure[1]);
+            CollectionAssert.That.Collection(network[1]).IsEqualTo(new[,]
+            {
+                { 1.5152652441182986, -0.982214126039723 }
+            });
+        }
     }
 }
