@@ -62,6 +62,8 @@ namespace AI.NeuralNetworks.Tests
         [TestMethod]
         public void NeuralNetwork_Integral_Test()
         {
+            #region Теоретический результат
+
             static double ActivationInverse(double x) => x * (1 - x);
 
             double[,] W0 =
@@ -200,6 +202,21 @@ namespace AI.NeuralNetworks.Tests
             error *= 0.5;
 
             Assert.That.Value(error).IsEqual(0.022, 8.8e-5);
+
+            #endregion
+
+            #region Сравнительный тест нейронной сети
+            
+            double[][,] layers2 = { (double[,])W0.Clone(), (double[,])W1.Clone() };
+            var network = new MultilayerPerceptron(layers2);
+
+            var network_output2 = new double[1];
+            var teacher = network.CreateTeacher<IBackPropagationTeacher>();
+            error = teacher.Teach(network_input, network_output2, correct_output);
+            CollectionAssert.That.Collection(network_output2).IsEqualTo(new[] { 0.78139 }, 4.31e-7);
+            Assert.That.Value(error).IsEqual(0.023895, 7.19e-8); 
+
+            #endregion
         }
     }
 }
