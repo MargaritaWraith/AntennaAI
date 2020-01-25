@@ -10,6 +10,9 @@ namespace AntennaAI.RT.Digital.Spectra
         /// <summary>Спектральные составляющие</summary>
         private readonly Complex[] _Samples;
 
+        /// <summary>Смещение сигнала во времени</summary>
+        private readonly double _n0;
+
         /// <summary>Разрешающая способность спектра</summary>
         public double df { get; }
 
@@ -27,10 +30,12 @@ namespace AntennaAI.RT.Digital.Spectra
         /// <summary>Инициализация нового экземпляра <see cref="DigitalSpectrum"/></summary>
         /// <param name="df">Разрешающая способность спектра</param>
         /// <param name="Samples">Спектральные составляющие</param>
-        public DigitalSpectrum(double df, Complex[] Samples)
+        /// <param name="n0">Смещение сигнала во времени</param>
+        public DigitalSpectrum(double df, Complex[] Samples, double n0 = 0)
         {
             this.df = df;
             _Samples = Samples;
+            _n0 = n0;
         }
 
         /// <summary>Вычисление цифрового сигнала на основе цифрового спектра</summary>
@@ -49,7 +54,9 @@ namespace AntennaAI.RT.Digital.Spectra
                     signal_sample += S[m].Real * Cos(arg * m) - S[m].Imaginary * Sin(arg * m);
                 signal[n] = signal_sample;
             }
-            return new DigitalSignal(dt: 1 / MaximumFrequency, signal);
+
+            var dt = 1 / MaximumFrequency;
+            return new DigitalSignal(dt: dt, signal, _n0 * dt);
         }
     }
 }

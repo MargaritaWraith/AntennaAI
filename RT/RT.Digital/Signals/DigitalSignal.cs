@@ -11,6 +11,9 @@ namespace AntennaAI.RT.Digital.Signals
         /// <summary>Массив выборки отсчётов цифрового сигнала</summary>
         private readonly double[] _Samples;
 
+        /// <summary>Начальное смещение сигнала во времени</summary>
+        public double t0 { get; }
+
         /// <summary>Период времени дискретизации</summary>
         public double dt { get; }
 
@@ -54,10 +57,12 @@ namespace AntennaAI.RT.Digital.Signals
         /// <summary>Инициализация нового экземпляра <see cref="DigitalSignal"/></summary>
         /// <param name="dt">Период времени дискретизации</param>
         /// <param name="Samples">Массив значений выборки сигнала</param>
-        public DigitalSignal(double dt, double[] Samples)
+        /// <param name="t0">Смещение сигнала во времени</param>
+        public DigitalSignal(double dt, double[] Samples, double t0 = 0)
         {
             this.dt = dt;
             _Samples = Samples;
+            this.t0 = t0;
         }
 
         /// <summary>Вычисление спектра сигнала</summary>
@@ -76,7 +81,7 @@ namespace AntennaAI.RT.Digital.Signals
                     spectrum_sample += new Complex(s[n] * Cos(arg * n), s[n] * Sin(arg * n));
                 spectrum[m] = spectrum_sample / N;
             }
-            return new DigitalSpectrum(df: 1 / SignalTime, spectrum);
+            return new DigitalSpectrum(df: 1 / SignalTime, spectrum, n0: t0 / dt);
         }
     }
 }

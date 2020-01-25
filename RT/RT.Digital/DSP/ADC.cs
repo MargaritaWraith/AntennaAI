@@ -77,8 +77,9 @@ namespace AntennaAI.RT.Digital.DSP
         /// <summary>Дискретизация аналогового сигнала</summary>
         /// <param name="s">Дискретизируемый аналоговый сигнал</param>
         /// <param name="T">Период времени формирования выборки</param>
+        /// <param name="t0">Начальное смещение во времени</param>
         /// <returns>Цифровой сигнал</returns>
-        public DigitalSignal Discretize(Signal s, double T)
+        public DigitalSignal Discretize(Signal s, double T, double t0 = 0)
         {
             var N = (int)(T * _fd);
             var samples = new double[N];
@@ -88,7 +89,7 @@ namespace AntennaAI.RT.Digital.DSP
             var resolution = Resolution;
 
             for (var n = 0; n < N; n++)
-                samples[n] = Quantization(Limit(s(n * dt), min, max), resolution);
+                samples[n] = Quantization(Limit(s(n * dt + t0), min, max), resolution);
             return new DigitalSignal(dt, samples);
         }
     }
