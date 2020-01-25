@@ -62,6 +62,8 @@ namespace AI.NeuralNetworks.Tests
         [TestMethod]
         public void NeuralNetwork_Integral_Test()
         {
+            static double ActivationInverse(double x) => x * (1 - x);
+
             double[,] W0 =
             {
                 {  1.0, 0.5 },
@@ -111,6 +113,78 @@ namespace AI.NeuralNetworks.Tests
             CollectionAssert.That.Collection(inputs[1]).IsEqualTo(new[] { 0.81757, 0.952574 }, 4.48e-6);
             CollectionAssert.That.Collection(outputs[1]).IsEqualTo(new[] { 1.2738 }, 1.25e-5);
             CollectionAssert.That.Collection(network_output).IsEqualTo(new[] { 0.78139 }, 4.31e-7);
+
+            double[] correct_output = { 1 };
+
+            var error = correct_output.Zip(network_output, (c, v) => c - v).Sum(delta => delta * delta) / 2;
+
+            Assert.That.Value(error).IsEqual(0.023895, 7.19e-8);
+
+            var output_error = errors[^1];
+            for (var i = 0; i < output_error.Length; i++)
+                output_error[i] = (correct_output[i] - network_output[i]) * ActivationInverse(network_output[i]);
+
+            CollectionAssert.That.Collection(errors[^1]).IsEqualTo(new[] { 0.0373 }, 4.28e-5);
+
+            for (var level = errors.Length - 2; level >= 0; level--)
+            {
+                var error_level = errors[level];
+                var prev_error_level = errors[level + 1];
+                var w = layers[level + 1];
+                var level_inputs = inputs[level + 1];
+                for (var i = 0; i < error_level.Length; i++)
+                {
+                    var err = 0d;
+                    for (var j = 0; j < prev_error_level.Length; j++)
+                        err += prev_error_level[j] * w[j, i];
+                    error_level[i] = err * ActivationInverse(level_inputs[i]);
+                }
+            }
+
+            CollectionAssert.That.Collection(errors[0]).IsEqualTo(new[] { 0.0083449, -0.0016851 }, 9.42e-6);
+
+            var rho = 0.5;
+            for (var level = 0; level < layers.Length; level++)
+            {
+                var w = layers[level];
+                var layer_offset = Offsets[level];
+                var err = errors[level];
+                var level_inputs = inputs[level];
+                var outputs_count = w.GetLength(0);
+                var inputs_count = w.GetLength(1);
+                for (var i = 0; i < outputs_count; i++)
+                {
+                    for (var j = 0; j < inputs_count; j++)
+                        w[i, j] += rho * err[i] * level_inputs[j];
+
+                    layer_offset[i] += rho * err[i];
+                }
+            }
+
+            var expected_w = new[]
+            {
+                new [,]
+                {
+                    {  1, 0.50417 },
+                    { -1, 1.99916 }
+                },
+                new [,]
+                {
+                    { 1.51525, -0.9882 }
+                }
+            };
+
+            double[][] expected_offsets =
+            {
+                new [] { 1.00417,  0.99915 },
+                new [] { 1.01865 }
+            };
+
+            for (var level = 0; level < layers.Length; level++)
+            {
+                CollectionAssert.That.Collection(layers[level]).IsEqualTo(expected_w[level], 6e-3);
+                CollectionAssert.That.Collection(Offsets[level]).IsEqualTo(expected_offsets[level], 2.15e-5);
+            }
         }
     }
 }
