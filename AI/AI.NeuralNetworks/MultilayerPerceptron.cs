@@ -217,10 +217,18 @@ namespace AntennaAI.AI.NeuralNetworks
             ActivationFunction Activation = null,
             double[] State = null)
         {
+            // Вычисляем X_next = f(Net = W * X + Wo*O)
             var layer_outputs_count = LayerWeights.GetLength(0);
             var layer_inputs_count = LayerWeights.GetLength(1);
 
-            throw new NotImplementedException();
+            for (var output_index = 0; output_index < layer_outputs_count; output_index++)
+            {
+                var output = Offset[output_index] * OffsetWeight[output_index];
+                for (var input_index = 0; input_index < layer_inputs_count; input_index++)
+                    output += LayerWeights[output_index, input_index] * Input[input_index];
+                if (State != null) State[output_index] = output;
+                Output[output_index] = Activation?.Value(output) ?? Sigmoid.Activation(output);
+            }
         }
 
         #endregion
