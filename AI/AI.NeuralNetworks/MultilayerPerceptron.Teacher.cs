@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AntennaAI.AI.NeuralNetworks.ActivationFunctions;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 
 namespace AntennaAI.AI.NeuralNetworks
@@ -92,6 +93,68 @@ namespace AntennaAI.AI.NeuralNetworks
                     state,
                     outputs);
 
+                var dw = inertial_factor.Equals(0d) ? null : _DW;
+                var dw_offset = inertial_factor.Equals(0d) ? null : _DWoffset;
+
+                var errors = _Errors;                                       // Массив ошибок в слоях
+                var output_layer_error = errors[layers_count - 1];          // Ошибка выходного слоя
+
+                for (var output_index = 0; output_index < outputs_count; output_index++)
+                    output_layer_error[output_index] = (Expected[output_index] - Output[output_index])
+                        * (layer_activation[layers_count - 1]?.DiffValue(Output[output_index]) ?? Sigmoid.DiffActivation(Output[output_index]));
+                // Проходим по всем слоям от выхода ко входу
+                for (var layer_index = errors.Length - 1; layer_index >= 0; layer_index--)
+                {
+                    var w = layers[layer_index];                // Текущий слой
+                    var layer_inputs_count = w.GetLength(1);    // Количество входов текущего слоя
+                    var layer_outputs_count = w.GetLength(0);   // Количество выходов (нейронов) текущего слоя
+                    var error_level = errors[layer_index];      // Ошибка текущего слоя
+
+                    #region Обратное распространение ошибки
+
+                    // Если слой не последний, то пересчитываем ошибку текущего слоя на предыдущий
+                    if (layer_index > 0)
+                    {
+                        // Количество выходов (нейронов) в предыдущем слое
+                        var prev_layer_outputs_count = layers[layer_index - 1].GetLength(0);
+                        // Создаём вектор значений для ошибки предыдущего слоя
+                        var prev_layer_error = errors[layer_index - 1];
+                        // Извлекаем производную функции активации предыдущего слоя
+                        var prev_layer_activation = layer_activation[layer_index - 1];
+
+                        var layer_state = state[layer_index];
+
+                        // Вектор выхода предыдущего слоя
+                        var prev_layer_output = outputs[layer_index - 1];
+                        // Для каждого нейрона (выхода) предыдущего слоя
+                        for (var i = 0; i < prev_layer_outputs_count; i++)
+                        {
+                            // Вычисляем ошибку как...
+                            var err = 0d;
+                            // ...как сумму произведений коэффициентов передачи связей, ведущих к данному нейрону, умноженных на ошибку соответствующего нейрона текущего слоя
+                            for (var j = 0; j < layer_outputs_count; j++) // j - номер связи с j-тым нейроном текущего слоя
+                                err += error_level[j] * w[j, i];          // i - номер нейрона в предыдущем слое
+
+                            // Ошибка по нейрону = суммарная взвешенная ошибка всех связей умноженная на значение производной функции активации для выхода нейрона
+                            switch (prev_layer_activation)
+                            {
+                                case null:
+                                    prev_layer_error[i] = err * Sigmoid.DiffActivation(prev_layer_output[i]);
+                                    break;
+                                case DiffSimplifiedActivationFunction activation:
+                                    prev_layer_error[i] = err * activation.DiffFunc(prev_layer_output[i]);
+                                    break;
+                                default:
+                                    prev_layer_error[i] = err * prev_layer_activation.DiffValue(layer_state[i]);
+                                    break;
+                            }
+                        }
+                    }
+
+                    #endregion
+
+                    throw new NotImplementedException();
+                }
                 throw new NotImplementedException();
             }
             
