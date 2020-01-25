@@ -171,6 +171,22 @@ namespace AntennaAI.AI.NeuralNetworks
             Random rnd)
             : this(CreateLayersMatrix(InputsCount, NeuronsCount, (L, N, I) => rnd.NextDouble() - 0.5)) { }
 
+        private static NetworkCoefficientInitializer GetStandardRandomInitializer()
+        {
+            var rnd = new Random();
+            return (l, n, i) => rnd.NextDouble() - 0.5;
+        }
+
+        /// <summary>Инициализация новой многослойной нейронной сети</summary>
+        /// <param name="InputsCount">Количество входов сети</param>
+        /// <param name="NeuronsCount">Количество нейронов в слоях</param>
+        /// <param name="Initialize">Функция инициализации коэффициентов матриц передачи слоёв</param>
+        public MultilayerPerceptron(
+            int InputsCount,
+            IEnumerable<int> NeuronsCount,
+            NetworkCoefficientInitializer Initialize = null)
+            : this(CreateLayersMatrix(InputsCount, NeuronsCount, Initialize ?? GetStandardRandomInitializer())) { }
+
         #endregion
 
         /* --------------------------------------------------------------------------------------------- */
