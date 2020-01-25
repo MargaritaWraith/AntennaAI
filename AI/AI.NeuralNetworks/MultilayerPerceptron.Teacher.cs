@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using AntennaAI.AI.NeuralNetworks.ActivationFunctions;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 
@@ -233,7 +232,7 @@ namespace AntennaAI.AI.NeuralNetworks
             }
 
             /// <summary>Установить значение оптимальной архитектуры сети</summary>
-            public override void SetBestVariant() => throw new NotImplementedException();
+            public override void SetBestVariant() => CopyArchitecture(_BestVariantW, _Network._Layers, _BestVariantOffsetW, _Network._OffsetsWeights);
         }
     }
 }
