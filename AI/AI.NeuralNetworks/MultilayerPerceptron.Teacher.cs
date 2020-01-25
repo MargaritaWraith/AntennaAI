@@ -192,7 +192,28 @@ namespace AntennaAI.AI.NeuralNetworks
                 if (network_error >= _LastError) return network_error;
                 _LastError = network_error;
 
+                CopyArchitecture(layers, _BestVariantW, layer_offset_weights, _BestVariantOffsetW);
+
                 return network_error;
+            }
+
+            /// <summary>Скопировать архитектуру</summary>
+            /// <param name="SourceW">Набор матриц коэффициентов источника операции копирования</param>
+            /// <param name="DestinationW">Набор матриц коэффициентов приёмника операции копирования</param>
+            /// <param name="SourceOffsetW">Набор весов коэффициентов смещения источника операции копирования</param>
+            /// <param name="DestinationOffsetW">Набор весов коэффициентов смещения приёмника операции копирования</param>
+            private static void CopyArchitecture(
+                IReadOnlyList<double[,]> SourceW,
+                IReadOnlyList<double[,]> DestinationW,
+                IReadOnlyList<double[]> SourceOffsetW,
+                IReadOnlyList<double[]> DestinationOffsetW)
+            {
+                var layers_count = SourceW.Count;
+                for (var i = 0; i < layers_count; i++)
+                    Buffer.BlockCopy(SourceW[i], 0, DestinationW[i], 0, SourceW[i].GetLength(0) * SourceW[i].GetLength(1) * 8);
+
+                for (var i = 0; i < SourceOffsetW.Count; i++)
+                    SourceOffsetW[i].CopyTo(DestinationOffsetW[i], 0);
             }
 
             /// <summary>Расчёт ошибки</summary>
