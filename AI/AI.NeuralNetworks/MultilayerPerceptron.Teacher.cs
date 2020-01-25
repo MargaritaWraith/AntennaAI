@@ -65,6 +65,11 @@ namespace AntennaAI.AI.NeuralNetworks
 
             public override double Teach(double[] Input, double[] Output, double[] Expected)
             {
+                if (Input is null) throw new ArgumentNullException(nameof(Input));
+                if (Output is null) throw new ArgumentNullException(nameof(Output));
+                if (Expected is null) throw new ArgumentNullException(nameof(Expected));
+                if (Expected.Length != Output.Length) throw new InvalidOperationException("Длина вектора ожидаемого результата не совпадает с длиной вектора результата сети");
+
                 throw new NotImplementedException();
             }
             
