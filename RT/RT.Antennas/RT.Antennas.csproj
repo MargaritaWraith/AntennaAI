@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>AntennaAI.RT.Antennas</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Service\Mathematics\Mathematics.csproj" />
+    <ProjectReference Include="..\RT.Base\RT.Base.csproj" />
+  </ItemGroup>
+
+</Project>
