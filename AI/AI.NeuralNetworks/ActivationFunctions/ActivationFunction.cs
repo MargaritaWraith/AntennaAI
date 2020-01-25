@@ -10,10 +10,18 @@ namespace AntennaAI.AI.NeuralNetworks.ActivationFunctions
         /// <summary>Линейная функция</summary>
         public static Linear Linear => new Linear();
 
+        /// <summary>Отсечка</summary>
+        public static ReLU ReLU => new ReLU();
+
         /// <summary>Линейная функция с параметрами</summary>
         /// <param name="K">Производная</param>
         /// <param name="B">Смещение</param>
         public static Linear GetLinear(double K, double B = 0) => new Linear(K, B);
+
+        /// <summary>Функция отсечки (линейная ломанная x>0?k*x:0)</summary>
+        /// <param name="K">Производная</param>
+        /// <param name="B">Смещение</param>
+        public static ReLU GetReLU(double K, double B = 0) => new ReLU(K, B);
 
         /// <summary>Значение функции активации</summary>
         /// <param name="x">Взвешенная сумма входов нейронов</param>
