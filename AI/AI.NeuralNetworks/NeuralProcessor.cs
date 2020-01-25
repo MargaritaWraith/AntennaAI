@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 
 namespace AntennaAI.AI.NeuralNetworks
@@ -75,6 +73,25 @@ namespace AntennaAI.AI.NeuralNetworks
             return _OutputFormatter(_Output);
         }
 
+        /// <summary>Создать учителя сети</summary>
+        /// <param name="Configurator">Метод конфигурации учителя</param>
+        /// <returns>Учитель нейронной сети</returns>
+        public TNetworkTeacher CreateTeacher<TNetworkTeacher>(Action<TNetworkTeacher> Configurator)
+            where TNetworkTeacher : class, INetworkTeacher
+        {
+            if (!(_Network is ITeachableNeuralNetwork teachable_network))
+                throw new InvalidOperationException("Сеть не является обучаемой");
+            return teachable_network.CreateTeacher(Configurator);
+        }
+
+        /// <summary>Создать учителя сети</summary><returns>Учитель нейронной сети</returns>
+        public INetworkTeacher CreateTeacher()
+        {
+            if (!(_Network is ITeachableNeuralNetwork teachable_network))
+                throw new InvalidOperationException("Сеть не является обучаемой");
+            return teachable_network.CreateTeacher();
+        }
+
         /// <summary>Учитель нейронной сети, используемой в нейропроцессоре</summary>
         private class ProcessorTeacher : INeuralProcessorTeacher<TInput, TOutput>
         {
@@ -143,5 +160,22 @@ namespace AntennaAI.AI.NeuralNetworks
                 return error;
             }
         }
+
+        /// <summary>Получить учитель процессора</summary>
+        /// <typeparam name="TNetworkTeacher">Тип учителя</typeparam>
+        /// <param name="BackOutputFormatter">Метод обратного преобразования выходного значения в массив значений выхода сети</param>
+        /// <param name="Configurator">Метод конфигурации учителя</param>
+        /// <returns>Учитель процессора</returns>
+        public INeuralProcessorTeacher<TInput, TOutput> CreateTeacher<TNetworkTeacher>(
+            BackOutputFormatter BackOutputFormatter,
+            Action<TNetworkTeacher> Configurator)
+            where TNetworkTeacher : class, INetworkTeacher =>
+            new ProcessorTeacher(this, BackOutputFormatter, CreateTeacher(Configurator));
+
+        /// <summary>Получить учитель процессора</summary>
+        /// <param name="BackOutputFormatter">Метод обратного преобразования выходного значения в массив значений выхода сети</param>
+        /// <returns>Учитель процессора</returns>
+        public INeuralProcessorTeacher<TInput, TOutput> CreateTeacher(BackOutputFormatter BackOutputFormatter) =>
+            new ProcessorTeacher(this, BackOutputFormatter, CreateTeacher());
     }
 }
