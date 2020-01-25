@@ -7,9 +7,17 @@ namespace AntennaAI.AI.NeuralNetworks
 {
     public partial class MultilayerPerceptron
     {
-        public INetworkTeacher CreateTeacher() => throw new NotImplementedException();
+        public INetworkTeacher CreateTeacher() => new BackPropagationTeacher(this);
 
-        public TNetworkTeacher CreateTeacher<TNetworkTeacher>(Action<TNetworkTeacher> Configurator = null) where TNetworkTeacher : class, INetworkTeacher => throw new NotImplementedException();
+        public TNetworkTeacher CreateTeacher<TNetworkTeacher>(Action<TNetworkTeacher> Configurator = null)
+            where TNetworkTeacher : class, INetworkTeacher
+        {
+            var teacher = new BackPropagationTeacher(this) as TNetworkTeacher
+                          ?? throw new InvalidOperationException(
+                              $"Учитель сети не может быть представлен в виде {typeof(TNetworkTeacher)}");
+            Configurator?.Invoke(teacher);
+            return teacher;
+        }
 
         private class BackPropagationTeacher : NetworkTeacher, IBackPropagationTeacher
         {
