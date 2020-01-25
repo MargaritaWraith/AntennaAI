@@ -218,5 +218,63 @@ namespace AI.NeuralNetworks.Tests
 
             #endregion
         }
+
+        private static void CheckNetwork(MultilayerPerceptron Network, double[][,] W)
+        {
+            if (Network is null) throw new ArgumentNullException(nameof(Network));
+            if (W is null) throw new ArgumentNullException(nameof(W));
+
+            var layers_count = W.Length;
+
+            Assert.That.Value(Network.LayersCount).IsEqual(layers_count);                       // Число слоёв должно быть равно числу матрицы коэффициентов
+            Assert.That.Value(Network.InputsCount).IsEqual(W[0].GetLength(1));                  // Число входов сети - число столбцов первой матрицы
+            Assert.That.Value(Network.OutputsCount).IsEqual(W[layers_count - 1].GetLength(0));  // Число выходов сети - число строк последней матрицы
+
+            Assert.That.Value(Network.Offests.Count).IsEqual(layers_count);                     // Количество векторов смещений равно числу слоёв сети
+            Assert.That.Value(Network.OffsetWeights.Count).IsEqual(layers_count);               // Число векторов весовых коэффициентов смещений слоёв равно числу слоёв
+
+            for (var i = 0; i < layers_count; i++)
+            {
+                Assert.That.Value(Network.Offests[i].Length).IsEqual(W[i].GetLength(0));        // Размер вектора смещений равен числу строк первой матрицы (числу нейронов входного слоя)
+                CollectionAssert.That.Collection(Network.Offests[i]).ElementsAreEqualTo(1);               // По умолчанию смещения равны 1
+                Assert.That.Value(Network.OffsetWeights[i].Length).IsEqual(W[i].GetLength(0));  // Размер вектора весовых коэффициентов смещений первого слоя равно числу строк матрицы первого слоя (числу нейронов)
+                CollectionAssert.That.Collection(Network.OffsetWeights[i]).ElementsAreEqualTo(1);         // По умолчанию веса векторов смещений равны 1
+            }
+
+            Assert.That.Value(Network.HiddenOutputs.Count).IsEqual(layers_count - 1);
+            for (var i = 0; i < layers_count - 1; i++)
+            {
+                var hidden_inputs = Network.HiddenOutputs[i];
+                Assert.That.Value(hidden_inputs.Length).IsEqual(W[i].GetLength(0));
+                CollectionAssert.That.Collection(hidden_inputs).ElementsAreEqualTo(0);
+            }
+        }
+
+        [TestMethod]
+        public void ThreeLayersNetworkCreation_Test()
+        {
+            double[][,] network_structure =
+            {
+                new double[,]
+                {
+                    { 1, 1, 1 },
+                    { 1, 1, 1 }
+                },
+                new double[,]
+                {
+                    { 1, 1 },
+                    { 1, 1 },
+                    { 1, 1 }
+                },
+                new double[,]
+                {
+                    { 1, 1, 1 }
+                }
+            };
+
+            var network = new MultilayerPerceptron(network_structure);
+
+            CheckNetwork(network, network_structure);
+        }
     }
 }
