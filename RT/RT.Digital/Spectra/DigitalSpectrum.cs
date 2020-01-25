@@ -40,7 +40,7 @@ namespace AntennaAI.RT.Digital.Spectra
             var M = S.Length;
             var signal = new double[M];
 
-            var w0 = 2 * PI;
+            var w0 = 2 * PI / M;
             for (var n = 0; n < M; n++)
             {
                 double signal_sample = 0;
