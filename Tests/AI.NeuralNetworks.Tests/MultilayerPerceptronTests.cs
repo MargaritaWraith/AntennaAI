@@ -394,5 +394,20 @@ namespace AI.NeuralNetworks.Tests
             CollectionAssert.That.Collection(output).ValuesAreEqual(0.78139043094733129);
             CollectionAssert.That.Collection(network.HiddenOutputs[0]).ValuesAreEqual(0.81757447619364365, 0.95257412682243336);
         }
+
+        [TestMethod]
+        public void ProcessWithReturn_Test()
+        {
+            var network_structure = GetNetworkStructure();
+            var network = new MultilayerPerceptron(network_structure);
+            CheckNetwork(network, network_structure);
+
+            double[] input = { 0, 1 };           // Входное воздействие
+
+            var output = network.Process(input);
+
+            CollectionAssert.That.Collection(output).ValuesAreEqual(0.78139043094733129);
+            CollectionAssert.That.Collection(network.HiddenOutputs[0]).ValuesAreEqual(0.81757447619364365, 0.95257412682243336);
+        }
     }
 }
