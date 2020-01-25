@@ -464,5 +464,64 @@ namespace AI.NeuralNetworks.Tests
                 { 1.5152652441182986, -0.982214126039723 }
             });
         }
+
+        [TestMethod]
+        public void NeuralController_Test()
+        {
+            var rnd = new Random();
+            var controller = new MultilayerPerceptron(4, new[] { 3, 4 }, (Layer, Neuron, Input) => rnd.NextDouble() - 0.5);
+            //controller.Layer.Foreach(Layer => Layer.SetOffsets());
+
+            Assert.That.Value(controller.InputsCount).IsEqual(4);
+            Assert.That.Value(controller.OutputsCount).IsEqual(4);
+
+            // Состояние персонажа
+            // H - Health points     (Текущий уровень здоровья)
+            // K - Knifes count      (количество ножей)
+            // G - Guns count        (количество пистолетов)
+            // E - Enemy count       (враг поблизости - количество)
+            // Варианты действий
+            // A - Attack enemy      (атаковать врага!)
+            // R - Run               (бежать!!!)
+            // W - Wander            (бродить, слоняться, искать приключений)
+            // H - Hide              (прятаться...)
+            // Должен быть выбран один из вариантов действий - максимальное значение
+            Example[] examples =
+            {                    // H  K  G  E            A  R  W  H
+                new Example(new []{ 2, 0, 0, 0 }, new []{ 0, 0, 1, 0 }), //  0 - здоров,   оружия нет,    врагов нет - бродить
+                new Example(new []{ 2, 0, 0, 1 }, new []{ 0, 0, 1, 0 }), //  1 - здоров,   оружия нет,    враг 1     - уворачиваться
+                new Example(new []{ 2, 0, 1, 1 }, new []{ 0, 0, 0, 0 }), //  2 - здоров,   есть пистолет, врага нет  - уворачиваться
+                new Example(new []{ 2, 0, 1, 2 }, new []{ 1, 0, 0, 0 }), //  3 - здоров,   есть пистолет, врагов 2!! - атаковать!!!
+                new Example(new []{ 2, 1, 0, 2 }, new []{ 0, 0, 0, 1 }), //  4 - здоров,   есть нож,      врагов 2!! - прятаться...
+                new Example(new []{ 2, 1, 0, 1 }, new []{ 1, 0, 0, 0 }), //  5 - здоров,   есть нож,      враг 1
+                                                                              
+                new Example(new []{ 1, 0, 0, 0 }, new []{ 0, 0, 1, 0 }), //  6 - здоровье так себе, оружия нет,    врагов нет - бродить
+                new Example(new []{ 1, 0, 0, 1 }, new []{ 0, 0, 0, 1 }), //  7 - здоровье так себе, оружия нет,    враг 1     - прятаться...
+                new Example(new []{ 1, 0, 1, 1 }, new []{ 1, 0, 0, 0 }), //  8 - здоровье так себе, есть пистолет, враг 1     - атаковать!!!
+                new Example(new []{ 1, 0, 1, 0 }, new []{ 0, 0, 0, 1 }), //  9 - здоровье так себе, есть пистолет, врагов нет - прятаться...
+                new Example(new []{ 1, 1, 0, 2 }, new []{ 0, 0, 0, 1 }), // 10 - здоровье так себе, есть нож,      врагов 2!! - прятаться...
+                new Example(new []{ 1, 1, 0, 1 }, new []{ 0, 0, 0, 1 }), // 11 - здоровье так себе, есть нож,      враг 1     - прятаться...
+                                                                              
+                new Example(new []{ 0, 0, 0, 0 }, new []{ 0, 0, 1, 0 }), // 12 - здоровья нет...,   оружия нет,    врагов нет - бродить
+                new Example(new []{ 0, 0, 0, 1 }, new []{ 0, 0, 0, 1 }), // 13 - здоровья нет...,   оружия нет,    враг 1     - прятаться...
+                new Example(new []{ 0, 0, 1, 1 }, new []{ 0, 0, 0, 1 }), // 14 - здоровья нет...,   есть пистолет, враг 1     - прятаться...
+                new Example(new []{ 0, 0, 1, 2 }, new []{ 0, 1, 0, 0 }), // 15 - здоровья нет...,   есть пистолет, врагов 2!! - бежать!!!
+                new Example(new []{ 0, 1, 0, 2 }, new []{ 0, 1, 0, 0 }), // 16 - здоровья нет...,   есть нож,      врагов 2!! - бежать!!!
+                new Example(new []{ 0, 1, 0, 1 }, new []{ 0, 0, 0, 1 }), // 17 - здоровья нет...,   есть нож,      враг 1     - прятаться...
+            };
+
+            var teacher = controller.CreateTeacher<IBackPropagationTeacher>(t => t.Rho = 0.2);
+            var epochs = Enumerable
+                .Range(0, 100_000)
+                .Select(I => teacher.Teach(examples))
+                .ToArray();
+            var errors = epochs.Select(e => e.ErrorAverage);
+
+            var first_errors = errors.Take(2).ToArray();
+            var last_errors = errors.TakeLast(50).ToArray();
+
+            CollectionAssert.That.Collection(first_errors).ElementsAreSatisfyCondition(v => v > 0.4);
+            CollectionAssert.That.Collection(last_errors).ElementsAreSatisfyCondition(v => v < 0.095);
+        }
     }
 }
