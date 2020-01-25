@@ -1,4 +1,6 @@
 ﻿using System.Numerics;
+using AntennaAI.RT.Digital.Signals;
+using static System.Math;
 
 namespace AntennaAI.RT.Digital.Spectra
 {
@@ -29,6 +31,25 @@ namespace AntennaAI.RT.Digital.Spectra
         {
             this.df = df;
             _Samples = Samples;
+        }
+
+        /// <summary>Вычисление цифрового сигнала на основе цифрового спектра</summary>
+        public DigitalSignal GetSignal()
+        {
+            var S = _Samples;
+            var M = S.Length;
+            var signal = new double[M];
+
+            var w0 = 2 * PI;
+            for (var n = 0; n < M; n++)
+            {
+                double sigrnal_sample = 0;
+                var arg = w0 * n;
+                for (var m = 0; m < M; m++)
+                    sigrnal_sample += S[m].Real * Cos(arg * m) - S[m].Imaginary * Sin(arg * m);
+                signal[n] = sigrnal_sample;
+            }
+            return new DigitalSignal(dt: 1 / MaximumFrequency, signal);
         }
     }
 }

@@ -1,4 +1,7 @@
 ﻿using System.Linq;
+using System.Numerics;
+using AntennaAI.RT.Digital.Spectra;
+using static System.Math;
 
 namespace AntennaAI.RT.Digital.Signals
 {
@@ -55,6 +58,25 @@ namespace AntennaAI.RT.Digital.Signals
         {
             this.dt = dt;
             _Samples = Samples;
+        }
+
+        /// <summary>Вычисление спектра сигнала</summary>
+        public DigitalSpectrum GetSpectrum()
+        {
+            var s = _Samples;
+            var N = s.Length;
+            var spectrum = new Complex[N];
+
+            var w0 = -2 * PI / N;
+            for (var m = 0; m < N; m++)
+            {
+                Complex spectrum_sample;
+                var arg = w0 * m;
+                for(var n = 0; n < N; n++)
+                    spectrum_sample += new Complex(s[n] * Cos(arg * n), s[n] * Sin(arg * n));
+                spectrum[m] = spectrum_sample / N;
+            }
+            return new DigitalSpectrum(df: 1 / SignalTime, spectrum);
         }
     }
 }
