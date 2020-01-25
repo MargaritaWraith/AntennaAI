@@ -146,6 +146,25 @@ namespace AntennaAI.AI.NeuralNetworks
             double[][] Outputs
         )
         {
+            if (Layers is null) throw new ArgumentNullException(nameof(Layers));
+            if (Activations is null) throw new ArgumentNullException(nameof(Activations));
+            if (Offsets is null) throw new ArgumentNullException(nameof(Offsets));
+            if (OffsetsWeights is null) throw new ArgumentNullException(nameof(OffsetsWeights));
+            if (Outputs is null) throw new ArgumentNullException(nameof(Outputs));
+
+            if (Input.Length != Layers[0].GetLength(1)) throw new ArgumentException($"Размер входного вектора ({Input.Length}) не равен количествоу входов сети ({Layers[0].GetLength(1)})", nameof(Input));
+            if (Output.Length != Layers[Layers.Length - 1].GetLength(0)) throw new ArgumentException($"Размер выходного вектора ({Output.Length}) не соответвтует количеству выходов сети ({Layers[Layers.Length - 1].GetLength(0)})", nameof(Output));
+            if (Activations.Length != Layers.Length) throw new InvalidOperationException("Размер массива функций активации не соответствует количеству слоёв сети");
+
+            var layer = Layers;                                     // Матрицы коэффициентов передачи слоёв
+            var layers_count = layer.Length;                        // Количество слоёв
+            var layer_activation = Activations;                     // Активационные функции слоёв
+            var layer_offsets = Offsets;                            // Смещения слоёв
+            var layer_offset_weights = OffsetsWeights;              // Весовые коэффициенты весов слоёв <= 0
+
+            var state = State;
+            var outputs = Outputs;
+
             throw new NotImplementedException();
         }
 
