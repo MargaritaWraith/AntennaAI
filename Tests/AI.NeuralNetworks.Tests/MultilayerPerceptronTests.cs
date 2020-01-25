@@ -377,5 +377,22 @@ namespace AI.NeuralNetworks.Tests
             CollectionAssert.That.Collection(network.OffsetWeights[0]).ValuesAreEqual(1.0041771552314689, 0.99915648939720769);
             CollectionAssert.That.Collection(network.OffsetWeights[1]).ValuesAreEqual(1.0186713804831196);
         }
+
+        [TestMethod]
+        public void Process_Test()
+        {
+            var network_structure = GetNetworkStructure();
+            var network = new MultilayerPerceptron(network_structure);
+
+            CheckNetwork(network, network_structure);
+
+            double[] input = { 0, 1 }; // Входное воздействие
+            double[] output = { 0 };   // Вектор отклика сети
+
+            network.Process(input, output);
+
+            CollectionAssert.That.Collection(output).ValuesAreEqual(0.78139043094733129);
+            CollectionAssert.That.Collection(network.HiddenOutputs[0]).ValuesAreEqual(0.81757447619364365, 0.95257412682243336);
+        }
     }
 }
