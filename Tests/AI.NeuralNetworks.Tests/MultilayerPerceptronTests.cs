@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AntennaAI.AI.NeuralNetworks;
+using AntennaAI.AI.NeuralNetworks.ActivationFunctions;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -206,7 +208,7 @@ namespace AI.NeuralNetworks.Tests
             #endregion
 
             #region Сравнительный тест нейронной сети
-            
+
             double[][,] layers2 = { (double[,])W0.Clone(), (double[,])W1.Clone() };
             var network = new MultilayerPerceptron(layers2);
 
@@ -214,7 +216,7 @@ namespace AI.NeuralNetworks.Tests
             var teacher = network.CreateTeacher<IBackPropagationTeacher>();
             error = teacher.Teach(network_input, network_output2, correct_output);
             CollectionAssert.That.Collection(network_output2).IsEqualTo(new[] { 0.78139 }, 4.31e-7);
-            Assert.That.Value(error).IsEqual(0.023895, 7.19e-8); 
+            Assert.That.Value(error).IsEqual(0.023895, 7.19e-8);
 
             #endregion
         }
@@ -522,6 +524,104 @@ namespace AI.NeuralNetworks.Tests
 
             CollectionAssert.That.Collection(first_errors).ElementsAreSatisfyCondition(v => v > 0.4);
             CollectionAssert.That.Collection(last_errors).ElementsAreSatisfyCondition(v => v < 0.095);
+        }
+
+        [TestMethod]
+        public void SingleNeuronNetwork_Variant1()
+        {
+            var network = new MultilayerPerceptron(1, new[] { 1 }, layer => layer.Activation = ActivationFunction.Linear);
+
+            Assert.That.Value(network)
+               .Where(net => net.LayersCount).Check(count => count.IsEqual(1))
+               .Where(net => net.Layer[0]).Check(layer0 => layer0
+                   .Where(layer => layer.InputsCount).Check(count => count.IsEqual(1))
+                   .Where(layer => layer.OutputsCount).Check(count => count.IsEqual(1)));
+
+            ref var k = ref network.Layer[0].Weights[0, 0];
+            ref var b = ref network.Layer[0].OffsetWeights[0];
+            k = 0.1;
+            Assert.That.Value(k).IsNotEqual(0).And.Value(b).IsEqual(1);
+
+            var X = Enumerable.Range(0, 1001).Select(i => i / 1000d * 6 - 3);
+
+            static double F(double x) => 2 * x + 5;
+            var data = X.Select(x => (x, f: F(x))).ToArray();
+
+            var teacher = network.CreateTeacher<IBackPropagationTeacher>(t => t.Rho = 0.03);
+            var output = new double[1];
+            const int random_variant = 1;
+            var rnd = new Random(random_variant);
+            var error = data
+               .Mix(rnd)
+               .Select(d => teacher.Teach(new[] { d.x }, output, new[] { d.f }))
+               .TakeWhile(e => e > 0)
+               .ToArray();
+
+            const double eps = 1e-13;
+            Assert.That.Value(k).IsEqualTo(2).WithAccuracy(eps);
+            Assert.That.Value(b).IsEqualTo(5).WithAccuracy(eps);
+            Assert.That.Value(error)
+               .Where(errors => errors.Length).Check(count => count.IsEqual(417))
+               .Where(errors => errors[^1]).Check(LastError => LastError.LessThan(error.First()).IsEqualTo(0).WithAccuracy(eps));
+        }
+
+        [TestMethod]
+        public void SingleNeuronNetwork_Variant2()
+        {
+            var network = new MultilayerPerceptron(1, new[] { 1 }, layer => layer.Activation = ActivationFunction.Linear);
+
+            Assert.That.Value(network)
+               .Where(net => net.LayersCount).Check(count => count.IsEqual(1))
+               .Where(net => net.Layer[0]).Check(layer0 => layer0
+                   .Where(layer => layer.InputsCount).Check(count => count.IsEqual(1))
+                   .Where(layer => layer.OutputsCount).Check(count => count.IsEqual(1)));
+
+            ref var k = ref network.Layer[0].Weights[0, 0];
+            ref var b = ref network.Layer[0].OffsetWeights[0];
+            k = 1;
+            Assert.That.Value(k).IsNotEqual(0).And.Value(b).IsEqual(1);
+
+            var X = Enumerable.Range(0, 1001).Select(x => x / 100d);
+
+            const double k0 = 2;
+            const double b0 = 5;
+            static double F(double x) => k0 * x + b0;
+            var data = X.Select(x => (x, f: F(x))).ToArray();
+            const int random_variant = 1;
+            var rnd = new Random(random_variant);
+            var data_mix = data.Mix(rnd);
+
+            var teacher = network.CreateTeacher<IBackPropagationTeacher>(t => t.Rho = 0.037);
+
+            var errors = new List<double>(100);
+            const double eps = 1e-14;
+            var result = new double[1];
+            var xx = new double[1];
+            var ff = new double[1];
+            ref var x0 = ref xx[0];
+            ref var f0 = ref ff[0];
+            for (var i = 0; i < 1000; i++)
+            {
+                var error = 0d;
+                foreach (var d in data_mix)
+                {
+                    (x0, f0) = d;
+                    var e = teacher.Teach(xx, result, ff);
+                    error += e;
+                    Assert.That.Value(k).IsNotNaN();
+                }
+                errors.Add(error);
+                if (error <= eps)
+                    break;
+            }
+
+            Assert.That.Value(errors)
+               .Where(e => e.Count).Check(count => count.IsEqual(4))
+               .Where(e => e[^1]).Check(LastError => LastError
+                   .LessThan(errors.First())
+                   .IsEqual(0)).And
+               .Value(k).IsEqual(2).And
+               .Value(b).IsEqualTo(b0);
         }
     }
 }

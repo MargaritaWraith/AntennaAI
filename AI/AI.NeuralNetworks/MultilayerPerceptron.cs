@@ -187,6 +187,24 @@ namespace AntennaAI.AI.NeuralNetworks
             NetworkCoefficientInitializer Initialize = null)
             : this(CreateLayersMatrix(InputsCount, NeuronsCount, Initialize ?? GetStandardRandomInitializer())) { }
 
+        /// <summary>Инициализатор слоя</summary><param name="Layer">Менеджер инициализируемого слоя</param>
+        public delegate void LayerInitializer(LayerManager Layer);
+
+        /// <summary>Инициализация новой многослойной нейронной сети</summary>
+        /// <param name="InputsCount">Количество входов сети</param>
+        /// <param name="NeuronsCount">Количество нейронов в слоях</param>
+        /// <param name="Initializer">Функция инициализации слоёв сети</param>
+        public MultilayerPerceptron(
+            int InputsCount,
+            IEnumerable<int> NeuronsCount,
+            LayerInitializer Initializer)
+            : this(InputsCount, NeuronsCount)
+        {
+            if (Initializer is null) return;
+            foreach (var layer in Layer)
+                Initializer(layer);
+        }
+
         #endregion
 
         /* --------------------------------------------------------------------------------------------- */
