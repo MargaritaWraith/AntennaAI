@@ -13,6 +13,9 @@ namespace AntennaAI.AI.NeuralNetworks.ActivationFunctions
         /// <summary>Отсечка</summary>
         public static ReLU ReLU => new ReLU();
 
+        /// <summary>Гиперболический тангенс</summary>
+        public static Th Th => new Th();
+
         /// <summary>Линейная функция с параметрами</summary>
         /// <param name="K">Производная</param>
         /// <param name="B">Смещение</param>
