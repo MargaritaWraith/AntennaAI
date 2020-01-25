@@ -299,5 +299,21 @@ namespace AI.NeuralNetworks.Tests
                     {
                         { 1, 1 }
                     }));
+
+        [TestMethod]
+        public void RandomWeightCreation_Test()
+        {
+            const int inputs_count = 5;
+            const int outputs_count = 2;
+
+            var rnd = new Random();
+            int[] neurons_counts = { 5, 7, outputs_count };
+
+            var network = new MultilayerPerceptron(inputs_count, neurons_counts, rnd);
+
+            Assert.That.Value(network.LayersCount).IsEqual(neurons_counts.Length);
+            Assert.That.Value(network.InputsCount).IsEqual(inputs_count);
+            Assert.That.Value(network.OutputsCount).IsEqual(outputs_count);
+        }
     }
 }
