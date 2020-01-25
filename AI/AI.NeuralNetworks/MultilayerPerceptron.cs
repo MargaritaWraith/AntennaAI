@@ -33,6 +33,15 @@ namespace AntennaAI.AI.NeuralNetworks
 
         #region Свойства
 
+        /// <summary>Слой</summary>
+        public LayersManager Layer => new LayersManager(_Layers, _Offsets, _OffsetsWeights, _Outputs, _Activations);
+
+        /// <summary>Входной слой</summary>
+        public LayerManager LayerInput => Layer[0];
+
+        /// <summary>Выходной слой</summary>
+        public LayerManager LayerOutput => Layer[LayersCount - 1];
+
         public int InputsCount => _Layers[0].GetLength(1);
 
         public int OutputsCount => _Layers[_Layers.Length - 1].GetLength(0);
