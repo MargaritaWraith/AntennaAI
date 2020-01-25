@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 
 namespace AntennaAI.AI.NeuralNetworks
@@ -71,25 +73,6 @@ namespace AntennaAI.AI.NeuralNetworks
             _InputFormatter(Input, _Input);
             _Network.Process(_Input, _Output);
             return _OutputFormatter(_Output);
-        }
-
-        /// <summary>Создать учителя сети</summary>
-        /// <param name="Configurator">Метод конфигурации учителя</param>
-        /// <returns>Учитель нейронной сети</returns>
-        public TNetworkTeacher CreateTeacher<TNetworkTeacher>(Action<TNetworkTeacher> Configurator)
-            where TNetworkTeacher : class, INetworkTeacher
-        {
-            if (!(_Network is ITeachableNeuralNetwork teachable_network))
-                throw new InvalidOperationException("Сеть не является обучаемой");
-            return teachable_network.CreateTeacher(Configurator);
-        }
-
-        /// <summary>Создать учителя сети</summary><returns>Учитель нейронной сети</returns>
-        public INetworkTeacher CreateTeacher()
-        {
-            if (!(_Network is ITeachableNeuralNetwork teachable_network))
-                throw new InvalidOperationException("Сеть не является обучаемой");
-            return teachable_network.CreateTeacher();
         }
     }
 }
