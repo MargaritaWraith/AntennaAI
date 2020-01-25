@@ -43,11 +43,11 @@ namespace AntennaAI.RT.Digital.Spectra
             var w0 = 2 * PI;
             for (var n = 0; n < M; n++)
             {
-                double sigrnal_sample = 0;
+                double signal_sample = 0;
                 var arg = w0 * n;
                 for (var m = 0; m < M; m++)
-                    sigrnal_sample += S[m].Real * Cos(arg * m) - S[m].Imaginary * Sin(arg * m);
-                signal[n] = sigrnal_sample;
+                    signal_sample += S[m].Real * Cos(arg * m) - S[m].Imaginary * Sin(arg * m);
+                signal[n] = signal_sample;
             }
             return new DigitalSignal(dt: 1 / MaximumFrequency, signal);
         }
