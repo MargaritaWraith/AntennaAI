@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using AntennaAI.AI.NeuralNetworks.ActivationFunctions;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 
@@ -109,6 +110,99 @@ namespace AntennaAI.AI.NeuralNetworks
                 _Offsets[layer_index] = offsets;                // Создаём массив смещений нейронов слоя и инициализируем его единицами
                 _OffsetsWeights[layer_index] = offsets_weights; // Создаём массив коэффициентов смещений для слоя и инициализируем его единицами
             }
+        }
+
+        /// <summary>Инициализация матрицы весовых коэффициентов слоя</summary>
+        /// <param name="LayerWeights">Матрица весовых коэффициентов слоя</param>
+        /// <param name="LayerIndex">Индекс слоя</param>
+        /// <param name="Initializer">Функция инициализации весовых коэффициентов слоя</param>
+        private static void InitializeLayerWeightsMatrix(
+            double[,] LayerWeights,
+            int LayerIndex,
+            NetworkCoefficientInitializer Initializer)
+        {
+            for (var i = 0; i < LayerWeights.GetLength(0); i++)
+                for (var j = 0; j < LayerWeights.GetLength(1); j++)
+                    LayerWeights[i, j] = Initializer.Invoke(LayerIndex, i, j);
+        }
+
+        /// <summary>Создать массив матриц передачи слоёв</summary>
+        /// <param name="InputsCount">Количество входов сети</param>
+        /// <param name="NeuronsCount">Количество нейронов в слоях</param>
+        /// <param name="Initialize">Функция инициализации весовых коэффициентов</param>
+        /// <returns>Массив матриц коэффициентов передачи слоёв сети</returns>
+        private static double[][,] CreateLayersMatrix(
+            int InputsCount,
+            IEnumerable<int> NeuronsCount,
+            NetworkCoefficientInitializer Initialize)
+        {
+            var neurons_count = NeuronsCount.ToArray();
+            var layers_count = neurons_count.Length;
+            var weights = new double[layers_count][,];
+
+            var w = new double[neurons_count[0], InputsCount];
+            weights[0] = w;
+            InitializeLayerWeightsMatrix(w, 0, Initialize);
+
+            for (var layer = 1; layer < layers_count; layer++)
+            {
+                w = new double[neurons_count[layer], neurons_count[layer - 1]];
+                weights[layer] = w;
+                InitializeLayerWeightsMatrix(w, layer, Initialize);
+            }
+
+            return weights;
+        }
+
+        /// <summary>Инициализатор нейронной связи</summary>
+        /// <param name="Layer">Номер слоя</param>
+        /// <param name="Neuron">Номер нейрона в слое</param>
+        /// <param name="Input">Номер входа нейрона</param>
+        /// <returns>Коэффициент передачи входа нейрона</returns>
+        public delegate double NetworkCoefficientInitializer(int Layer, int Neuron, int Input);
+
+        /// <summary>Инициализация новой многослойной нейронной сети</summary>
+        /// <param name="InputsCount">Количество входов сети</param>
+        /// <param name="NeuronsCount">Количество нейронов в слоях</param>
+        /// <param name="rnd">Генератор случайных чисел для заполнения матриц коэффициентов передачи слоёв</param>
+        public MultilayerPerceptron(
+            int InputsCount,
+            IEnumerable<int> NeuronsCount,
+            Random rnd)
+            : this(CreateLayersMatrix(InputsCount, NeuronsCount, (L, N, I) => rnd.NextDouble() - 0.5)) { }
+
+        private static NetworkCoefficientInitializer GetStandardRandomInitializer()
+        {
+            var rnd = new Random();
+            return (l, n, i) => rnd.NextDouble() - 0.5;
+        }
+
+        /// <summary>Инициализация новой многослойной нейронной сети</summary>
+        /// <param name="InputsCount">Количество входов сети</param>
+        /// <param name="NeuronsCount">Количество нейронов в слоях</param>
+        /// <param name="Initialize">Функция инициализации коэффициентов матриц передачи слоёв</param>
+        public MultilayerPerceptron(
+            int InputsCount,
+            IEnumerable<int> NeuronsCount,
+            NetworkCoefficientInitializer Initialize = null)
+            : this(CreateLayersMatrix(InputsCount, NeuronsCount, Initialize ?? GetStandardRandomInitializer())) { }
+
+        /// <summary>Инициализатор слоя</summary><param name="Layer">Менеджер инициализируемого слоя</param>
+        public delegate void LayerInitializer(LayerManager Layer);
+
+        /// <summary>Инициализация новой многослойной нейронной сети</summary>
+        /// <param name="InputsCount">Количество входов сети</param>
+        /// <param name="NeuronsCount">Количество нейронов в слоях</param>
+        /// <param name="Initializer">Функция инициализации слоёв сети</param>
+        public MultilayerPerceptron(
+            int InputsCount,
+            IEnumerable<int> NeuronsCount,
+            LayerInitializer Initializer)
+            : this(InputsCount, NeuronsCount)
+        {
+            if (Initializer is null) return;
+            foreach (var layer in Layer)
+                Initializer(layer);
         }
 
         #endregion
