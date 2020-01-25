@@ -69,14 +69,54 @@ namespace AntennaAI.AI.NeuralNetworks
 
         #region Конструкторы
 
-        public MultilayerPerceptron() { }
+        /// <summary>Инициализация новой многослойной нейронной сети</summary>
+        /// <param name="Layers">Набор матриц коэффициентов передачи слоёв</param>
+        public MultilayerPerceptron(params double[][,] Layers)
+        {
+            _Layers = Layers ?? throw new ArgumentNullException(nameof(Layers));
+            if (Layers.Length == 0) throw new ArgumentException("Число слоёв должно быть больше 0", nameof(Layers));
+
+            var layers_count = Layers.Length;
+            _Outputs = new double[layers_count - 1][];
+            _Offsets = new double[layers_count][];
+            _OffsetsWeights = new double[layers_count][];
+
+            _Activations = new ActivationFunction[layers_count];
+
+            // Создаём структуры слоёв
+            for (var layer_index = 0; layer_index < layers_count; layer_index++)
+            {
+                // Количество входов слоя
+                var inputs_count = _Layers[layer_index].GetLength(1);
+
+                // Проверяем - если слой не первый и количество выходов предыдущего слоя не совпадает с количеством входов текущего слоя, то это ошибка структуры сети
+                if (layer_index > 0 && _Layers[layer_index - 1].GetLength(0) != inputs_count)
+                    throw new FormatException($"Количество входов слоя {layer_index} не равно количеству выходов слоя {layer_index - 1}");
+
+                //Количество выходов слоя (количество нейронов)
+                var outputs_count = _Layers[layer_index].GetLength(0);
+
+                if (layer_index < layers_count - 1)
+                    _Outputs[layer_index] = new double[outputs_count];    // Выходы слоя
+
+                var offsets = new double[outputs_count];
+                var offsets_weights = new double[outputs_count];
+                for (var i = 0; i < outputs_count; i++)
+                {
+                    offsets[i] = 1;
+                    offsets_weights[i] = 1;
+                }
+                _Offsets[layer_index] = offsets;                // Создаём массив смещений нейронов слоя и инициализируем его единицами
+                _OffsetsWeights[layer_index] = offsets_weights; // Создаём массив коэффициентов смещений для слоя и инициализируем его единицами
+            }
+        }
 
         #endregion
 
         /* --------------------------------------------------------------------------------------------- */
 
         #region Методы
-        
+
         public void Process(Span<double> Input, Span<double> Output) => throw new NotImplementedException(); 
 
         #endregion
