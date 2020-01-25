@@ -27,5 +27,21 @@
             array[i] = obj;
             return array;
         }
+
+        /// <summary>Определить индекс максимального элемента в массиве</summary>
+        /// <param name="array">Исследуемый массив</param>
+        /// <returns>Индекс максимального элемента</returns>
+        public static int GetMaxIndex(this double[] array)
+        {
+            var max = double.NegativeInfinity;
+            var max_index = -1;
+            for (var i = 0; i < array.Length; ++i)
+            {
+                if (array[i] <= max) continue;
+                max = array[i];
+                max_index = i;
+            }
+            return max_index;
+        }
     }
 }
