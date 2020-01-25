@@ -106,6 +106,11 @@ namespace AI.NeuralNetworks.Tests
 
 
             DirectDistribution(inputs, layers, Offsets, OffsetsW, outputs, network_output);
+
+            CollectionAssert.That.Collection(outputs[0]).ValuesAreEqual(1.5, 3);
+            CollectionAssert.That.Collection(inputs[1]).IsEqualTo(new[] { 0.81757, 0.952574 }, 4.48e-6);
+            CollectionAssert.That.Collection(outputs[1]).IsEqualTo(new[] { 1.2738 }, 1.25e-5);
+            CollectionAssert.That.Collection(network_output).IsEqualTo(new[] { 0.78139 }, 4.31e-7);
         }
     }
 }
