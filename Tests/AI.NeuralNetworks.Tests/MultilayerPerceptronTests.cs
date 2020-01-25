@@ -279,5 +279,25 @@ namespace AI.NeuralNetworks.Tests
 
         [TestMethod, ExpectedException(typeof(ArgumentException))]
         public void ZeroLayersNetworkCreation_Test() => new MultilayerPerceptron(new double[0][,]);
+
+        [TestMethod]
+        public void InconsistentLayersInputsCount_Test() =>
+            Assert.ThrowsException<FormatException>(() =>
+                new MultilayerPerceptron(
+                    new double[,]
+                    {
+                        { 1, 1, 1 },
+                        { 1, 1, 1 }
+                    },
+                    new double[,]
+                    {
+                        { 1, 1 },
+                        { 1, 1 },
+                        { 1, 1 }
+                    },
+                    new double[,]
+                    {
+                        { 1, 1 }
+                    }));
     }
 }
