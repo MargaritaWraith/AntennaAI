@@ -9,7 +9,57 @@ namespace AI.NeuralNetworks.Tests
     [TestClass]
     public class MultilayerPerceptronTests
     {
-      [TestMethod]
+        private static void ProcessLayer(
+            double[] Input,
+            double[,] W,
+            double[] NeuronOffsets,
+            double[] OffsetsWeights,
+            double[] Output)
+        {
+            for (var output_index = 0; output_index < Output.Length; output_index++)
+            {
+                Output[output_index] = 0;
+                for (var input_index = 0; input_index < Input.Length; input_index++)
+                    Output[output_index] += W[output_index, input_index] * Input[input_index];
+
+                Output[output_index] += NeuronOffsets[output_index] * OffsetsWeights[output_index];
+            }
+        }
+
+        private static double Activation(double x) => 1 / (1 + Math.Exp(-x));
+
+        private static void Activation(double[] X, double[] FX)
+        {
+            for (var i = 0; i < X.Length; i++)
+                FX[i] = Activation(X[i]);
+        }
+
+        private static void DirectDistribution(
+            double[][] Inputs,
+            double[][,] Layers,
+            double[][] Offsets,
+            double[][] OffsetsWeights,
+            double[][] Outputs,
+            double[] NetworkOutput)
+        {
+            var layer_index = -1;
+            do
+            {
+                if (layer_index++ == 0)
+                    Activation(Outputs[layer_index - 1], Inputs[layer_index]);
+
+                ProcessLayer(
+                    Inputs[layer_index],
+                    Layers[layer_index],
+                    Offsets[layer_index],
+                    OffsetsWeights[layer_index],
+                    Outputs[layer_index]);
+            } while (layer_index < Layers.Length - 1);
+
+            Activation(Outputs[layer_index], NetworkOutput);
+        }
+
+        [TestMethod]
         public void NeuralNetwork_Integral_Test()
         {
             double[,] W0 =
@@ -52,7 +102,10 @@ namespace AI.NeuralNetworks.Tests
 
             var network_output = new double[1];
 
-            Assert.Fail();
+            // прямое распространение
+
+
+            DirectDistribution(inputs, layers, Offsets, OffsetsW, outputs, network_output);
         }
     }
 }
