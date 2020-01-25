@@ -74,5 +74,74 @@ namespace AntennaAI.AI.NeuralNetworks
             _Network.Process(_Input, _Output);
             return _OutputFormatter(_Output);
         }
+
+        /// <summary>Учитель нейронной сети, используемой в нейропроцессоре</summary>
+        private class ProcessorTeacher : INeuralProcessorTeacher<TInput, TOutput>
+        {
+            /// <summary>Обучаемый нейронный процессор</summary>
+            private readonly NeuralProcessor<TInput, TOutput> _NeuralProcessor;
+
+            /// <summary>Метод преобразования значения выхода нейропроцессора в массив вещественных значений выхода нейронной сети</summary>
+            private readonly BackOutputFormatter _BackOutputFormatter;
+
+            /// <summary>Объект, осуществляющий обучение нейронной сети</summary>
+            private readonly INetworkTeacher _Teacher;
+
+            /// <summary>Значения входа нейронной сети </summary>
+            private readonly double[] _Input;
+
+            /// <summary>Текущие значения выхода сети в процессе обучения</summary>
+            private readonly double[] _Output;
+
+            /// <summary>Массив ожидаемых значений на выходе сети</summary>
+            private readonly double[] _Expected;
+
+            /// <summary>Очищать вектор входа сети перед каждой итерацией обучения</summary>
+            private bool _ClearInput;
+
+            /// <summary>Очищать вектор ожидаемого значения сети перед каждой итерацией обучения</summary>
+            private bool _ClearExpected = true;
+
+            public bool ClearInput { get => _ClearInput; set => _ClearInput = value; }
+
+            public bool ClearExpected { get => _ClearExpected; set => _ClearExpected = value; }
+
+            /// <summary>Инициализация нового экземпляра <see cref="ProcessorTeacher"/></summary>
+            /// <param name="NeuralProcessor">Обучаемый нейронный процессор</param>
+            /// <param name="BackOutputFormatter">Метод упаковки ожидаемого значения на выходе нейронной сети в массив вещественных чисел - значений выходов сети</param>
+            /// <param name="Teacher">Учитель сети</param>
+            public ProcessorTeacher(
+                NeuralProcessor<TInput, TOutput> NeuralProcessor,
+                BackOutputFormatter BackOutputFormatter,
+                INetworkTeacher Teacher)
+            {
+                _NeuralProcessor = NeuralProcessor ?? throw new ArgumentNullException(nameof(NeuralProcessor));
+                _BackOutputFormatter = BackOutputFormatter ?? throw new ArgumentNullException(nameof(BackOutputFormatter));
+                _Teacher = Teacher ?? throw new ArgumentNullException(nameof(Teacher));
+                var network = Teacher.Network;
+                _Input = new double[network.InputsCount];
+                _Output = new double[network.OutputsCount];
+                _Expected = new double[_Output.Length];
+            }
+
+            public INeuralNetwork Network => _NeuralProcessor._Network;
+
+            public double Teach(TInput Input, TOutput Expected)
+            {
+                if (_ClearInput) Array.Clear(_Input, 0, _Input.Length);
+                if (_ClearExpected) Array.Clear(_Expected, 0, _Expected.Length);
+
+                _NeuralProcessor._InputFormatter(Input, _Input);
+                _BackOutputFormatter(Expected, _Expected);
+                return _Teacher.Teach(_Input, _Output, _Expected);
+            }
+
+            public double Teach(TInput Input, TOutput Expected, out TOutput Output)
+            {
+                var error = Teach(Input, Expected);
+                Output = _NeuralProcessor._OutputFormatter(_Output);
+                return error;
+            }
+        }
     }
 }
