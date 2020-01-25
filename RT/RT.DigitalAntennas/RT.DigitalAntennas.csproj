@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>AntennaAI.RT.DigitalAntennas</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RT.Antennas\RT.Antennas.csproj" />
+    <ProjectReference Include="..\RT.Base\RT.Base.csproj" />
+    <ProjectReference Include="..\RT.Digital\RT.Digital.csproj" />
+  </ItemGroup>
+
+</Project>
