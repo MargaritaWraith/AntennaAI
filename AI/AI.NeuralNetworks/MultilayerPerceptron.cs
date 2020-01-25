@@ -165,7 +165,34 @@ namespace AntennaAI.AI.NeuralNetworks
             var state = State;
             var outputs = Outputs;
 
-            throw new NotImplementedException();
+            for (var layer_index = 0; layer_index < layers_count; layer_index++)
+            {
+                // Определяем матрицу слоя W
+                var current_layer_weights = layer[layer_index];
+                // Определяем вектор входа X
+                var prev_layer_output = layer_index == 0                 // Если слой первый, то за выходы "предыдущего слоя"
+                    ? Input                                              // принимаем входной вектор
+                    : outputs[layer_index - 1];                          // иначе берём массив выходов предыдущего слоя
+
+                // Определяем вектор входа следующего слоя X_next         
+                var current_output = layer_index == layers_count - 1     // Если слой последний, то за выходы "следующего слоя"
+                    ? Output                                             // Принимаем массив выходного вектора
+                    : outputs[layer_index]                               // иначе берём массив текущего слоя
+                      ?? new double[current_layer_weights.GetLength(0)]; // Если выходного вектора нет, то создаём его!
+
+                // Определяем вектор входа функции активации Net
+                double[] current_state = null;
+                if (state != null) current_state = state[layer_index] ?? new double[current_output.Length];
+
+                // Определяем вектор смещения O (Offset)
+                var current_layer_offset = layer_offsets[layer_index];
+                // Определяем вектор весов смещения Wo (Weight of offset)
+                var current_layer_offset_weights = layer_offset_weights[layer_index];
+
+                var current_layer_activation = layer_activation[layer_index];
+
+                throw new NotImplementedException();
+            }
         }
 
         #endregion
