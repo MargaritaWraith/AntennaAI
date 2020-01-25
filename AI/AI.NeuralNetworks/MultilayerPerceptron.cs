@@ -191,12 +191,40 @@ namespace AntennaAI.AI.NeuralNetworks
 
                 var current_layer_activation = layer_activation[layer_index];
 
-                throw new NotImplementedException();
+                ProcessLayer(
+                    current_layer_weights,
+                    current_layer_offset,
+                    current_layer_offset_weights,
+                    prev_layer_output,
+                    current_output, current_layer_activation, current_state);
             }
+        }
+
+        /// <summary>Метод обработки одного слоя</summary>
+        /// <param name="LayerWeights">Матрица коэффициентов передачи</param>
+        /// <param name="Offset">Вектор смещений нейронов</param>
+        /// <param name="OffsetWeight">Вектор весовых коэффициентов</param>
+        /// <param name="Input">Вектор входного воздействия</param>
+        /// <param name="Output">Вектор выходных значений нейронов</param>
+        /// <param name="Activation">Активационная функция слоя (если не задана, то используется Сигмоид)</param>
+        /// <param name="State">Вектор входа функции активации</param>
+        private static void ProcessLayer(
+            double[,] LayerWeights,
+            double[] Offset,
+            double[] OffsetWeight,
+            Span<double> Input,
+            Span<double> Output,
+            ActivationFunction Activation = null,
+            double[] State = null)
+        {
+            var layer_outputs_count = LayerWeights.GetLength(0);
+            var layer_inputs_count = LayerWeights.GetLength(1);
+
+            throw new NotImplementedException();
         }
 
         #endregion
 
-            /* --------------------------------------------------------------------------------------------- */
-        }
+        /* --------------------------------------------------------------------------------------------- */
+    }
 }
