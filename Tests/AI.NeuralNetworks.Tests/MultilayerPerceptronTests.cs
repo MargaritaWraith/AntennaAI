@@ -315,5 +315,67 @@ namespace AI.NeuralNetworks.Tests
             Assert.That.Value(network.InputsCount).IsEqual(inputs_count);
             Assert.That.Value(network.OutputsCount).IsEqual(outputs_count);
         }
+
+        /// <summary>Структура тестовой сети</summary>
+        /// <remarks>
+        ///         1.0 ┌──────┐
+        ///  0 ----->>>>│ f(u) │>-
+        ///     \ / 0.5 └──────┘  \ 1.5 ┌──────┐
+        ///      Х                 ->>>>│ f(u) │>--- 1
+        ///     / \-1.0 ┌──────┐  /-1.0 └──────┘
+        ///  1 ----->>>>│ f(u) │>-
+        ///         2.0 └──────┘
+        ///
+        ///  f(x) = 1 / (1 + e^-x)
+        ///  df(x)/dx = x * (1 - x)
+        /// </remarks>
+        private static double[][,] GetNetworkStructure() => new[]
+        {
+            new[,] // Матрица коэффициентов передачи первого слоя
+            {
+                {1.0, 0.5}, // Число столбцов - число входов слоя (входов сети)
+                {-1.0, 2.0} // Число строк - число нейронов слоя (число выходов слоя)
+            },
+            new[,] // Матрица коэффициентов передачи второго слоя
+            {
+                {1.5, -1.0} // В выходном слое один нейрон и два входа
+            }
+        };
+
+        [TestMethod]
+        public void Processing_Test()
+        {
+            var network_structure = GetNetworkStructure();
+            var network = new MultilayerPerceptron(network_structure);
+            CheckNetwork(network, network_structure);
+
+            double[] input = { 0, 1 };                                                    // Входное воздействие
+            double[] output = { 0 };                                                      // Вектор отклика сети
+            double[] expected_output = { 1 };                                             // Ожидаемое значение оклика сети для процесса обучения
+
+            const double rho = 0.5;
+            var teacher = network.CreateTeacher<IBackPropagationTeacher>(t => t.Rho = rho);
+            var error = teacher.Teach(input, output, expected_output);                    // Обработка входного воздействия сетью
+
+            CollectionAssert.That.Collection(output).ValuesAreEqual(0.78139043094733129); // Проверка отклика сети
+            Assert.That.Value(error).IsEqual(0.023895071840696763);                       // Проверка вычисленного значения ошибки обработки
+
+            Assert.That.Value(network[0]).IsEqual(network_structure[0]);
+            CollectionAssert.That.Collection(network[0]).IsEqualTo(new[,]
+            {
+                {  1, 0.50417715523146878 },
+                { -1, 1.9991564893972078 }
+            });
+            Assert.That.Value(network[1]).IsEqual(network_structure[1]);
+            CollectionAssert.That.Collection(network[1]).IsEqualTo(new[,]
+            {
+                { 1.5152652441182986, -0.982214126039723 }
+            });
+
+            CollectionAssert.That.Collection(network.Offests[0]).ValuesAreEqual(1, 1);
+            CollectionAssert.That.Collection(network.Offests[1]).ValuesAreEqual(1);
+            CollectionAssert.That.Collection(network.OffsetWeights[0]).ValuesAreEqual(1.0041771552314689, 0.99915648939720769);
+            CollectionAssert.That.Collection(network.OffsetWeights[1]).ValuesAreEqual(1.0186713804831196);
+        }
     }
 }
