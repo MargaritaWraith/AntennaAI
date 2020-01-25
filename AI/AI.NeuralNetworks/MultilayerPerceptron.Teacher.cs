@@ -153,8 +153,40 @@ namespace AntennaAI.AI.NeuralNetworks
 
                     #endregion
 
-                    throw new NotImplementedException();
+                    var offset = layer_offsets[layer_index];           // Для данного слоя - смещение нейронов
+                    var w_offset = layer_offset_weights[layer_index];  //                  - веса смещений
+                    var layer_inputs = layer_index > 0 ? outputs[layer_index - 1] : Input;
+                    var layer_dw = dw?[layer_index];
+                    var layer_dw_offset = dw_offset?[layer_index];
+                    // Для всех нейронов слоя корректируем коэффициенты их входных связей и весов смещений
+                    for (var neuron = 0; neuron < layer_outputs_count; neuron++)
+                    {
+                        var error = error_level[neuron]; // Ошибка для нейрона в слое
+                                                         // Корректируем вес смещения
+                        var neuron_delta_w = rho * error * offset[neuron] * w_offset[neuron];
+                        if (layer_dw_offset != null)
+                        {
+                            neuron_delta_w = inertial_factor * layer_dw_offset[neuron]
+                                             + (1 - inertial_factor) * neuron_delta_w;
+                            layer_dw_offset[neuron] = neuron_delta_w;
+                        }
+                        w_offset[neuron] += neuron_delta_w;
+
+                        // Для каждого входа нейрона корректируем вес связи
+                        for (var input = 0; input < layer_inputs_count; input++)
+                        {
+                            var neuron_dw = rho * error * layer_inputs[input];
+                            if (layer_dw != null)
+                            {
+                                neuron_dw = inertial_factor * layer_dw[neuron, input]
+                                            + (1 - inertial_factor) * neuron_dw;
+                                layer_dw[neuron, input] = neuron_dw;
+                            }
+                            w[neuron, input] += neuron_dw;
+                        }
+                    }
                 }
+
                 throw new NotImplementedException();
             }
             
