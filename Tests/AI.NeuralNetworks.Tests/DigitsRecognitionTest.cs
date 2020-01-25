@@ -125,6 +125,15 @@ namespace AI.NeuralNetworks.Tests
             },
         };
 
+        private static int[] AddBinaryNoise([NotNull] int[] Data, Random rnd = null)
+        {
+            if (rnd is null) rnd = new Random();
+            var result = (int[])Data.Clone();
+            var index = rnd.Next(Data.Length);
+            result[index] = Data[index] > 0 ? 0 : 1;
+            return result;
+        }
+
         private static int[][] GetDigitSymbolsImages(Dictionary<char, int[]> Symbols = null) => (Symbols ?? __Symbols)
            .Where(v => char.IsDigit(v.Key))
            .ToDictionary(v => (int)char.GetNumericValue(v.Key), v => v.Value)
@@ -177,6 +186,46 @@ namespace AI.NeuralNetworks.Tests
 
             var expected_results = Enumerable.Range(0, 10).ToArray();
             CollectionAssert.That.Collection(results).IsEqualTo(expected_results);
+        }
+
+        private static int[] GetDiffIndexes([NotNull] int[] V1, [NotNull] int[] V2)
+        {
+            if (V1 is null) throw new ArgumentNullException(nameof(V1));
+            if (V2 is null) throw new ArgumentNullException(nameof(V2));
+            if (V1.Length != V2.Length) throw new InvalidOperationException("Размеры массивов не совпадают");
+            if (V1.Length == 0) return Array.Empty<int>();
+
+            var result = new List<int>(V1.Length);
+
+            for (var i = 0; i < V1.Length; i++)
+                if (V1[i] != V2[i])
+                    result.Add(i);
+
+            return result.ToArray();
+        }
+
+        [TestMethod]
+        public void DigitsRecognition_With_DistortionsCount_1_Test()
+        {
+            var processor = GetProcessor().Processor;
+
+            var rnd = new Random();
+            var chars = GetDigitSymbolsImages();
+            var results = chars.Select(processor.Process).ToArray();
+
+            var diff_results = new int[1000][];
+            for (var i = 0; i < 1000; i++)
+            {
+                var noisy_chars = chars.Select(c => AddBinaryNoise(c, rnd)).ToArray();
+                var noisy_results = noisy_chars.Select(processor.Process).ToArray();
+
+                diff_results[i] = GetDiffIndexes(results, noisy_results);
+            }
+
+            var average_error = diff_results.Average(errors => errors.Length);
+            Debug.WriteLine("Средняя ошибка распознавания символов составила {0:p2}", average_error);
+            const double error_threshold = 0.15;
+            Assert.That.Value(average_error).LessThan(error_threshold);
         }
     }
 }
