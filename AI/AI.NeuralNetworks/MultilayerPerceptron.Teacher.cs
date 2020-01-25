@@ -70,6 +70,28 @@ namespace AntennaAI.AI.NeuralNetworks
                 if (Expected is null) throw new ArgumentNullException(nameof(Expected));
                 if (Expected.Length != Output.Length) throw new InvalidOperationException("Длина вектора ожидаемого результата не совпадает с длиной вектора результата сети");
 
+                var inertial_factor = InertialFactor;
+                var rho = Math.Max(0, Math.Min(Rho, 1));
+
+                var layers_count = _Network.LayersCount;
+                var outputs_count = _Network.OutputsCount;
+
+                var layers = _Network._Layers;                              // Матрицы коэффициентов передачи слоёв
+                var outputs = _Network._Outputs;
+                var layer_offsets = _Network._Offsets;                      // Смещения слоёв
+                var layer_offset_weights = _Network._OffsetsWeights;        // Весовые коэффициенты весов слоёв <= 0
+                var layer_activation = _Network._Activations;               // Производные активационных функций слоёв
+                var state = _State;
+
+                Process(
+                    Input, Output,
+                    layers,
+                    layer_activation,
+                    layer_offsets,
+                    layer_offset_weights,
+                    state,
+                    outputs);
+
                 throw new NotImplementedException();
             }
             
