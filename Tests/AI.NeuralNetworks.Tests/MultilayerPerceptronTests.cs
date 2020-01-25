@@ -623,5 +623,21 @@ namespace AI.NeuralNetworks.Tests
                .Value(k).IsEqual(2).And
                .Value(b).IsEqualTo(b0);
         }
+
+        [TestMethod]
+        public void SingleLayerNetworkCreation_Test()
+        {
+            const int expected_inputs_count = 512;
+            const int expected_outputs_count = 8;
+            var network = new MultilayerPerceptron(expected_inputs_count, new[] { expected_outputs_count });
+
+            Assert.That.Value(network.LayersCount).IsEqual(1);
+            Assert.That.Value(network.InputsCount).IsEqual(expected_inputs_count);
+            Assert.That.Value(network.OutputsCount).IsEqual(expected_outputs_count);
+
+            var layer_matrix = network[0];
+            Assert.That.Value(layer_matrix.GetLength(0)).IsEqual(expected_outputs_count);
+            Assert.That.Value(layer_matrix.GetLength(1)).IsEqual(expected_inputs_count);
+        }
     }
 }
