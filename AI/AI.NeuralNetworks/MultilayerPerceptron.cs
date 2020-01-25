@@ -117,10 +117,40 @@ namespace AntennaAI.AI.NeuralNetworks
 
         #region Методы
 
-        public void Process(Span<double> Input, Span<double> Output) => throw new NotImplementedException(); 
+        /// <summary>Обработка данных сетью</summary>
+        /// <param name="Input">Массив входа</param>
+        /// <param name="Output">Массив выхода</param>
+        public virtual void Process(Span<double> Input, Span<double> Output) => Process(Input, Output, _Layers, _Activations, _Offsets, _OffsetsWeights, null, _Outputs);
+
+        /// <summary>Обработка данных сетью</summary>
+        /// <param name="Input">Массив входа</param>
+        /// <param name="Output">Массив выхода</param>
+        /// <param name="Layers">Массив матриц коэффициентов передачи слоёв</param>
+        /// <param name="Activations">Массив активационных функций слоёв (если функция не задана, используется Сигмоид)</param>
+        /// <param name="Offsets">Массив векторов смещений</param>
+        /// <param name="OffsetsWeights">Массив векторов весовых коэффициентов смещений</param>
+        /// <param name="State">
+        /// Массив состояний (входов функций активации) слоёв.
+        /// Может применяться в процессе обучения сети.
+        /// Достаточно создать массив длиной, равной количеству слоёв с пустыми элементами.
+        /// </param>
+        /// <param name="Outputs">Массив векторов выходных значений слоёв</param>
+        private static void Process(
+            Span<double> Input,
+            Span<double> Output,
+            double[][,] Layers,
+            ActivationFunction[] Activations,
+            double[][] Offsets,
+            double[][] OffsetsWeights,
+            double[][] State,
+            double[][] Outputs
+        )
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
 
-        /* --------------------------------------------------------------------------------------------- */
-    }
+            /* --------------------------------------------------------------------------------------------- */
+        }
 }
