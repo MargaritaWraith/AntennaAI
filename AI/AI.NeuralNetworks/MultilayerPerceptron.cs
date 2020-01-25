@@ -1,4 +1,5 @@
 ﻿using System;
+using AntennaAI.AI.NeuralNetworks.ActivationFunctions;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 
 namespace AntennaAI.AI.NeuralNetworks
@@ -21,6 +22,9 @@ namespace AntennaAI.AI.NeuralNetworks
 
         /// <summary>Массив выходов скрытых слоёв</summary>
         protected readonly double[][] _Outputs;
+
+        /// <summary>Функции активации слоёв</summary>
+        protected readonly ActivationFunction[] _Activations;
 
         #endregion
 
