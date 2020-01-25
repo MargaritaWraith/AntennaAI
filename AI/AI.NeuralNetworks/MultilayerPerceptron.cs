@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using AntennaAI.AI.NeuralNetworks.ActivationFunctions;
 using AntennaAI.AI.NeuralNetworks.Interfaces;
 
@@ -35,6 +36,23 @@ namespace AntennaAI.AI.NeuralNetworks
         public int InputsCount => _Layers[0].GetLength(1);
 
         public int OutputsCount => _Layers[_Layers.Length - 1].GetLength(0);
+
+        /// <summary>Число слоёв</summary>
+        public int LayersCount => _Layers.Length;
+
+        /// <summary>Скрытые выходы</summary>
+        public IReadOnlyList<double[]> HiddenOutputs => _Outputs;
+
+        /// <summary>Индекс матриц весовых коэффициентов слоёв</summary>
+        /// <param name="layer">Номер слоя</param>
+        /// <returns>Матрица весовых коэффициентов слоёв</returns>
+        public ref readonly double[,] this[int layer] => ref _Layers[layer];
+
+        /// <summary>Смещения слоёв</summary>
+        public IReadOnlyList<double[]> Offests => _Offsets;
+
+        /// <summary>Весовые коэффициенты смещений слоёв</summary>
+        public IReadOnlyList<double[]> OffsetWeights => _OffsetsWeights;
 
         #endregion
 
