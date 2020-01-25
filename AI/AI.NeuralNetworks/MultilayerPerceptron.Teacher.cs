@@ -187,9 +187,30 @@ namespace AntennaAI.AI.NeuralNetworks
                     }
                 }
 
-                throw new NotImplementedException();
+                var network_error = GetError(Output, Expected);
+
+                if (network_error >= _LastError) return network_error;
+                _LastError = network_error;
+
+                return network_error;
             }
-            
+
+            /// <summary>Расчёт ошибки</summary>
+            /// <param name="Output">Вектор результата вычисления прямого распространения</param>
+            /// <param name="Expected">Вектор ожидаемого значения</param>
+            /// <returns>Величина квадратичной ошибки</returns>
+            private static double GetError(double[] Output, double[] Expected)
+            {
+                var network_errors = 0d;
+                for (var i = 0; i < Output.Length; i++)
+                {
+                    var delta = Expected[i] - Output[i];
+                    network_errors += delta * delta;
+                }
+
+                return network_errors * 0.5;
+            }
+
             /// <summary>Установить значение оптимальной архитектуры сети</summary>
             public override void SetBestVariant() => throw new NotImplementedException();
         }
