@@ -13,7 +13,7 @@ namespace AntennaAI.RT.Antennas
         public abstract Complex Pattern(double Theta, double Phi);
 
         /// <summary>Получить сигнал с выхода антенны для заданного угла падения волны</summary>
-        /// <param name="s">Сигнал падающей волны</param>
+        /// <param name="s">Сигнал падающей волны (Время нормировано к частоте как t = t0 * f0)</param>
         /// <param name="Theta">Угол места</param>
         /// <param name="Phi">Угол азимута</param>
         /// <returns>Сигнал на выходе антенны</returns>

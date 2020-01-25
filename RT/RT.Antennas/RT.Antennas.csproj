@@ -6,11 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Service\Mathematics\Mathematics.csproj" />
     <ProjectReference Include="..\RT.Base\RT.Base.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Arrays\" />
   </ItemGroup>
 
 </Project>
