@@ -185,6 +185,21 @@ namespace AI.NeuralNetworks.Tests
                 CollectionAssert.That.Collection(layers[level]).IsEqualTo(expected_w[level], 6e-3);
                 CollectionAssert.That.Collection(Offsets[level]).IsEqualTo(expected_offsets[level], 2.15e-5);
             }
+
+            DirectDistribution(inputs, layers, Offsets, OffsetsW, outputs, network_output);
+
+            CollectionAssert.That.Collection(network_output).IsEqualTo(new[] { 0.7898 }, 1.99e-5);
+
+            error = 0d;
+            for (var i = 0; i < network_output.Length; i++)
+            {
+                var delta = correct_output[i] - network_output[i];
+                error += delta * delta;
+            }
+
+            error *= 0.5;
+
+            Assert.That.Value(error).IsEqual(0.022, 8.8e-5);
         }
     }
 }
