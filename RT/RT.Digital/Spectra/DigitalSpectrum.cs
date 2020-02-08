@@ -1,12 +1,36 @@
-﻿using System.Numerics;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Numerics;
 using AntennaAI.RT.Digital.Signals;
 using static System.Math;
 
 namespace AntennaAI.RT.Digital.Spectra
 {
     /// <summary>Спектр цифрового сигнала</summary>
-    public class DigitalSpectrum
+    public class DigitalSpectrum : IEnumerable<DigitalSpectrum.Sample>
     {
+        public readonly struct Sample
+        {
+            public double Frequency { get; }
+            public Complex Value { get; }
+
+            public double Re => Value.Real;
+            public double Im => Value.Imaginary;
+            public double Abs => Value.Magnitude;
+            public double Arg => Value.Phase;
+
+            public Sample(double Frequency, Complex Value)
+            {
+                this.Frequency = Frequency;
+                this.Value = Value;
+            }
+
+            public override string ToString() => $"[{Frequency}]:({Re}, {Im})[{Abs} *e^{Arg}]";
+
+            public static implicit operator Complex(Sample v) => v.Value;
+            public static implicit operator double(Sample v) => v.Abs;
+        }
+
         /// <summary>Спектральные составляющие</summary>
         private readonly Complex[] _Samples;
 
@@ -58,5 +82,16 @@ namespace AntennaAI.RT.Digital.Spectra
             var dt = 1 / MaximumFrequency;
             return new DigitalSignal(dt: dt, signal, _n0 * dt);
         }
+
+        public IEnumerator<Sample> GetEnumerator()
+        {
+            var samples = _Samples;
+            var samples_count = samples.Length;
+            var df = this.df;
+            for (var m = 0; m < samples_count; m++) 
+                yield return new Sample(m * df, samples[m]);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
